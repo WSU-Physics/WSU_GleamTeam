@@ -1,3 +1,4 @@
+
 # GLEAM CompProg.py 
 # Rev A
 # 2/5/2022
@@ -20,6 +21,8 @@ import numpy as np  		#Therm Cam, IMU
 import adafruit_mlx90640        #Therm Cam
 import adafruit_lsm9ds1		#IMU
 import adafruit_vl53l0x		#Prox
+
+from csv import writer
 
 
 # Initialize IMU -------------------------------------------------------------------------------------------------------------------------------------
@@ -61,7 +64,21 @@ def getTFminiData():
             if recv[0] == 0x59 and recv[1] == 0x59:     #python3
                 distance = recv[2] + recv[3] * 256
                 strength = recv[4] + recv[5] * 256
-                print('(', distance, ',', strength, ')')
+                #print('(', distance, ';', strength, ')')
+                # format and store dist and strength pin lidar.csv
+                list =["{0};{1}".format(distance, strength)]
+                with open('lidar.csv', 'a') as f_object:
+                    # Pass this file object to csv.writer()
+                    # and get a writer object
+                    writer_object = writer(f_object)
+
+                    # Pass the list as an argument into
+                    # the writerow()
+                    writer_object.writerow(list)
+
+                    #Close the file object
+                    f_object.close()
+                print(list)
                 ser.reset_input_buffer()
                 
             if recv[0] == 'Y' and recv[1] == 'Y':     #python2
@@ -71,7 +88,7 @@ def getTFminiData():
                 highS = int(recv[5].encode('hex'), 16)
                 distance = lowD + highD * 256
                 strength = lowS + highS * 256
-                print(distance, strength)
+                #print(distance, strength)
             
             # you can also distinguish python2 and python3: 
             #import sys
@@ -100,65 +117,108 @@ frame = np.zeros((24*32,)) # setup array for storing all 768 temperatures
 
 while True:
 # ------ Run Therm Cam -------------------------------------------------------------------------------------------------------------------------------
-	try:
-		mlx.getFrame(frame) # read MLX temperatures into frame var
-	except ValueError:
-		continue # if error, just read again
-	print("IR Thermal Camera Array Data")
-	print(repr(frame))
+        try:
+            mlx.getFrame(frame) # read MLX temperatures into frame var
+        except ValueError:
+            continue # if error, just read again   
+            print (hello) 
+        list =["{0}".format(frame)]
+        with open('ir.csv', 'a') as f_object:
+                    # Pass this file object to csv.writer()
+                    # and get a writer object
+                    writer_object = writer(f_object)
 
+                    # Pass the list as an argument into
+                    # the writerow()
+                    writer_object.writerow(list)
+
+                    #Close the file object
+                    f_object.close()
+        #print(list)
+        print(repr(frame))
 
 # ------ Run IMU -------------------------------------------------------------------------------------------------------------------------------
-    	# Read acceleration, magnetometer, gyroscope, temperature.
-    
-	accel_x, accel_y, accel_z = sensor.acceleration
-	mag_x, mag_y, mag_z = sensor.magnetic
-	gyro_x, gyro_y, gyro_z = sensor.gyro
-	temp = sensor.temperature
+            # Read acceleration, magnetometer, gyroscope, temperature.
+        
+        accel_x, accel_y, accel_z = sensor.acceleration
+        mag_x, mag_y, mag_z = sensor.magnetic
+        gyro_x, gyro_y, gyro_z = sensor.gyro
+        temp = sensor.temperature
 
-	mag= mag_x, mag_y, mag_z
-   
-	#Convert Gyro raw to degrees per second
-	rate_gyr_x = gyro_x*G_GAIN
-	rate_gyr_y = gyro_y*G_GAIN
-	rate_gyr_z = gyro_z*G_GAIN
+        mag= mag_x, mag_y, mag_z
+       
+        #Convert Gyro raw to degrees per second
+        rate_gyr_x = gyro_x*G_GAIN
+        rate_gyr_y = gyro_y*G_GAIN
+        rate_gyr_z = gyro_z*G_GAIN
 
-	#Calculate the angles from the gyro
-	gyroXangle= gyroXangle + (rate_gyr_x*DT)
-	gyroYangle= gyroYangle + (rate_gyr_y*DT)
-	gyroZangle= gyroZangle + (rate_gyr_z*DT)
+        #Calculate the angles from the gyro
+        gyroXangle= gyroXangle + (rate_gyr_x*DT)
+        gyroYangle= gyroYangle + (rate_gyr_y*DT)
+        gyroZangle= gyroZangle + (rate_gyr_z*DT)
 
-	#Convert Accelerometer values to degrees
-	AccXangle = (np.arctan2(accel_y,accel_z)+M_PI)*RAD_TO_DEG
-	AccYangle = (np.arctan2(accel_z,accel_x)+M_PI)*RAD_TO_DEG
+        #Convert Accelerometer values to degrees
+        AccXangle = (np.arctan2(accel_y,accel_z)+M_PI)*RAD_TO_DEG
+        AccYangle = (np.arctan2(accel_z,accel_x)+M_PI)*RAD_TO_DEG
 
-	#If IMU is up the correct way, use these lines
-	AccXangle= AccXangle-180.0
-	if AccYangle > 90:
-		AccYangle = AccYangle-270
-	else:
-		AccYangle = AccYangle + 90
+        #If IMU is up the correct way, use these lines
+        AccXangle= AccXangle-180.0
+        if AccYangle > 90:
+            AccYangle = AccYangle-270
+        else:
+            AccYangle = AccYangle + 90
 
-	#Complementary filter used to combine the accelerometer and gyro values.
-	CFangleX=AA*(CFangleX+rate_gyr_x*DT) +(1 - AA) * AccXangle
-	CFangleY=AA*(CFangleY+rate_gyr_y*DT) +(1 - AA) * AccYangle
+        #Complementary filter used to combine the accelerometer and gyro values.
+        CFangleX=AA*(CFangleX+rate_gyr_x*DT) +(1 - AA) * AccXangle
+        CFangleY=AA*(CFangleY+rate_gyr_y*DT) +(1 - AA) * AccYangle
 
-	print("X angle, Y angle, Magnetic Field, and Temperature from IMU")
-	print(AccXangle, AccYangle, mag, temp) 
+        print("X angle, Y angle, Magnetic Field, and Temperature from IMU")
+        #print(AccXangle, AccYangle, mag, temp) 
+        
+        list =["{0:0.3f}".format(AccXangle),
+        "{0:0.3f}".format(AccYangle),
+        "{0:0.3f};{1:0.3f};{2:0.3f}".format(mag_x, mag_y, mag_z),
+        "{0:0.3f}".format(temp)]
+        
+        print(list)
+        #Open our existing CSV file in append mode
+        # Create a file object for this file
+        with open('imu.csv', 'a') as f_object:
+            # Pass this file object to csv.writer()
+            # and get a writer object
+            writer_object = writer(f_object)
+
+            # Pass the list as an argument into
+            # the writerow()
+            writer_object.writerow(list)
+
+            #Close the file object
+            f_object.close()
 
 
-# ------ Run Lidar -------------------------------------------------------------------------------------------------------------------------------
-	print("TF Mini Lidar Reading (m)")
-	print(getTFminiData())
+    # ------ Run Lidar -------------------------------------------------------------------------------------------------------------------------------
+        print("TF Mini Lidar Reading (m)")
+        print(getTFminiData())
 
 
-# ------ Run Prox -------------------------------------------------------------------------------------------------------------------------------
-	print("proximity sensor range")
-	print("Range: {0}mm".format(vl53.range))
+    # ------ Run Prox -------------------------------------------------------------------------------------------------------------------------------
+        print("proximity sensor range")
+        print("Range: {0}mm".format(vl53.range))
+        
+        list =["{0}".format(vl53.range)]
+        with open('proximity.csv', 'a') as f_object:
+                    # Pass this file object to csv.writer()
+                    # and get a writer object
+                    writer_object = writer(f_object)
+
+                    # Pass the list as an argument into
+                    # the writerow()
+                    writer_object.writerow(list)
+
+                    #Close the file object
+                    f_object.close()
+        #print(list)
 
 
-# ------ Delay between readings ---------------------------------------------------------------------------------------------------------------------
-	time.sleep(2)		# End IMU
-
-
-
+    # ------ Delay between readings ---------------------------------------------------------------------------------------------------------------------
+        time.sleep(2)		# End IMU
