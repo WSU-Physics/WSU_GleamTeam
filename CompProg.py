@@ -1,7 +1,7 @@
 
 # GLEAM CompProg.py 
-# Rev A
-# 2/5/2022
+# Rev C
+# 2/12/2022
 # 
 # Signed: M. Pelissero, S. Shaw, H. Bhushan
 #
@@ -11,8 +11,7 @@
 # Rev Tracking:
 # Rev A --- first release. Reads 4 sensors (IMU, IR Prox, IR Thermal Cam, and LiDAR) and prints to console user - S. Shaw, M. Pelissero
 # Rev B --- added file saving function for sending data from EV to HB - H. Bhushan
-# Rev C --- added initial static LED assignments - S. Shaw
-
+# Rev C --- added initial static LED and servo assignments - S. Shaw
 
 
 import serial			# Lidar
@@ -25,6 +24,7 @@ import adafruit_lsm9ds1		# IMU
 import adafruit_vl53l0x		# Prox
 from gpiozero import LED        # LED contorl
 from signal import pause        # LED control
+import RPi.GPIO as GPIO         # Servo Control
 
 from csv import writer          # write data to csv file
 
@@ -114,6 +114,25 @@ mlx.refresh_rate = adafruit_mlx90640.RefreshRate.REFRESH_2_HZ # set refresh rate
 ser = serial.Serial('/dev/serial0',115200,timeout = 1) #end ThermCam
 
 frame = np.zeros((24*32,)) # setup array for storing all 768 temperatures
+
+
+# Initialize Servo Motors ---------------------------------------------------------------------------------------------------------------------------
+
+servo1PIN = 16
+servo2PIN = 18
+servo3PIN = 22
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(servo1PIN, GPIO.OUT)
+GPIO.setup(servo2PIN, GPIO.OUT)
+GPIO.setup(servo3PIN, GPIO.OUT)
+
+p1 = GPIO.PWM(serv1oPIN, 50) # GPIO 16 for PWM with 50Hz
+p1.start(2.5) # Initialization
+p2 = GPIO.PWM(serv2oPIN, 50) 
+p2.start(2.5) # Initialization
+p3 = GPIO.PWM(serv3oPIN, 50) 
+p3.start(2.5) # Initialization
+
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------
 # ------------------------------------ Main Loop for reading and sending data from sensors ------------------------------------------------------
@@ -226,13 +245,12 @@ while True:
         
         
     # ------ LED Control --------------------------------------------------------------------------------------------------------------------------------
-
         led1 = LED(7)
-        led2 = LED()
-        led3 = LED()
-        led4 = LED()
-        led5 = LED()
-        led6 = LED()
+        led2 = LED(11)
+        led3 = LED(13)
+        led4 = LED(15)
+        led5 = LED(19)
+        led6 = LED(21)
         
         led1.blink()
         led2.on()
@@ -240,7 +258,20 @@ while True:
         led4.off()
         led5.off()
         led6.off()
+        
 
+    # ------ Servo Motor Control -----------------------------------------------------------------------------------------------------------------------
+        try:
+                while True:
+                        p1.ChangeDutyCycle(5)
+                        p2.ChangeDutyCycle(5)
+                        p3.ChangeDutyCycle(5)
+                        time.sleep(0.1)
+                        p1.changeDutyCycle(7.5)
+                        p2.changeDutyCycle(7.5)
+                        p3.changeDutyCycle(7.5)
+                        
+                        
     # ------ Delay between readings ---------------------------------------------------------------------------------------------------------------------
         time.sleep(2)		# End IMU
 
