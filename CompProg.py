@@ -3,26 +3,30 @@
 # Rev A
 # 2/5/2022
 # 
-# Signed: M. Pelissero, S. Shaw
+# Signed: M. Pelissero, S. Shaw, H. Bhushan
 #
 #
 # A python 3 module for main EV computer operations in the GLEAM MNSGC challenge. Gains sensor data and transmits back to HB through the CU
 # 
 # Rev Tracking:
 # Rev A --- first release. Reads 4 sensors (IMU, IR Prox, IR Thermal Cam, and LiDAR) and prints to console user - S. Shaw, M. Pelissero
+# Rev B --- added file saving function for sending data from EV to HB - H. Bhushan
+# Rev C --- added initial static LED assignments - S. Shaw
 
 
 
-import serial			#Lidar
+import serial			# Lidar
 import time  			# Lidar, Therm Cam, IMU, Prox
 import board			# Therm Cam, IMU, Prox
 import busio 			# Therm Cam, Prox
-import numpy as np  		#Therm Cam, IMU
-import adafruit_mlx90640        #Therm Cam
-import adafruit_lsm9ds1		#IMU
-import adafruit_vl53l0x		#Prox
+import numpy as np  		# Therm Cam, IMU
+import adafruit_mlx90640        # Therm Cam
+import adafruit_lsm9ds1		# IMU
+import adafruit_vl53l0x		# Prox
+from gpiozero import LED        # LED contorl
+from signal import pause        # LED control
 
-from csv import writer
+from csv import writer          # write data to csv file
 
 
 # Initialize IMU -------------------------------------------------------------------------------------------------------------------------------------
@@ -219,6 +223,24 @@ while True:
                     f_object.close()
         #print(list)
 
+        
+        
+    # ------ LED Control --------------------------------------------------------------------------------------------------------------------------------
+
+        led1 = LED(7)
+        led2 = LED()
+        led3 = LED()
+        led4 = LED()
+        led5 = LED()
+        led6 = LED()
+        
+        led1.blink()
+        led2.on()
+        led3.off()
+        led4.off()
+        led5.off()
+        led6.off()
 
     # ------ Delay between readings ---------------------------------------------------------------------------------------------------------------------
         time.sleep(2)		# End IMU
+
