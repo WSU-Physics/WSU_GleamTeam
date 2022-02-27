@@ -1,7 +1,7 @@
 
 # GLEAM CompProg.py 
-# Rev C 
-# 2/26/2022
+# Rev C
+# 2/12/2022
 # 
 # Signed: M. Pelissero, S. Shaw, H. Bhushan
 #
@@ -22,7 +22,7 @@ import numpy as np  		# Therm Cam, IMU
 import adafruit_mlx90640        # Therm Cam
 import adafruit_lsm9ds1		# IMU
 import adafruit_vl53l0x		# Prox
-from gpiozero import LED        # LED contorl
+from gpiozero import LEDBoard   # LED contorl
 from signal import pause        # LED control
 import RPi.GPIO as GPIO         # Servo Control
 
@@ -116,22 +116,29 @@ ser = serial.Serial('/dev/serial0',115200,timeout = 1) #end ThermCam
 frame = np.zeros((24*32,)) # setup array for storing all 768 temperatures
 
 
-# Initialize Servo Motors ---------------------------------------------------------------------------------------------------------------------------
+# Initialize Servo Motors and LEDs ---------------------------------------------------------------------------------------------------------------------------
 
-servo1PIN = 16
-servo2PIN = 18
-servo3PIN = 22
+leds = LEDBoard(4, 17, 27, 22, 10, 9)
+leds.value = (1, 1, 1, 1, 1, 1)
+
+ledbits = np.zeros((6,))
+serv1 = 5.0
+serv2 = 5.0
+        
+servo1PIN = 23
+servo2PIN = 24
+servo3PIN = 25
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(servo1PIN, GPIO.OUT)
 GPIO.setup(servo2PIN, GPIO.OUT)
 GPIO.setup(servo3PIN, GPIO.OUT)
 
-p1 = GPIO.PWM(serv1oPIN, 50) # GPIO 16 for PWM with 50Hz
-p1.start(2.5) # Initialization
-p2 = GPIO.PWM(serv2oPIN, 50) 
-p2.start(2.5) # Initialization
-p3 = GPIO.PWM(serv3oPIN, 50) 
-p3.start(2.5) # Initialization
+p1 = GPIO.PWM(servo1PIN, 50) # GPIO 16 for PWM with 50Hz
+p1.start(0) # Initialization
+p2 = GPIO.PWM(servo2PIN, 50) 
+p2.start(0) # Initialization
+p3 = GPIO.PWM(servo3PIN, 50) 
+p3.start(0) # Initialization
 
 
 # -----------------------------------------------------------------------------------------------------------------------------------------------
@@ -242,36 +249,29 @@ while True:
                     f_object.close()
         #print(list)
 
+
+    # ------ Read servo and LED control values ----------------------------------------------------------------------------------------------------------
         
+	#read in ledbits
+        ledbits = (1, 1, 1, 1, 1, 1)
+	#read in servo values
+        serv1 = 5
+        serv2 = 7
         
     # ------ LED Control --------------------------------------------------------------------------------------------------------------------------------
-        led1 = LED(7)
-        led2 = LED(11)
-        led3 = LED(13)
-        led4 = LED(15)
-        led5 = LED(19)
-        led6 = LED(21)
-        
-        led1.blink()
-        led2.on()
-        led3.off()
-        led4.off()
-        led5.off()
-        led6.off()
+
+        leds.value = ledbits
         
 
     # ------ Servo Motor Control -----------------------------------------------------------------------------------------------------------------------
-        try:
-                while True:
-                        p1.ChangeDutyCycle(5)
-                        p2.ChangeDutyCycle(5)
-                        p3.ChangeDutyCycle(5)
-                        time.sleep(0.1)
-                        p1.changeDutyCycle(7.5)
-                        p2.changeDutyCycle(7.5)
-                        p3.changeDutyCycle(7.5)
+
+        p1.ChangeDutyCycle(serv1)
+        time.sleep(0.1)
+        p1.ChangeDutyCycle(0)
+        p2.ChangeDutyCycle(serv2)	
+        time.sleep(0.1)
+        p2.ChangeDutyCycle(0)
                         
                         
     # ------ Delay between readings ---------------------------------------------------------------------------------------------------------------------
-        time.sleep(2)		# End IMU
-
+        time.sleep(1)		# End IMU
