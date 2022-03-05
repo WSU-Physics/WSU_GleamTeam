@@ -28,6 +28,8 @@ import RPi.GPIO as GPIO         # Servo Control
 
 from csv import writer          # write data to csv file
 
+from datetime import datetime   #import datetime for appending time to csv
+
 
 # Initialize IMU -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -69,8 +71,12 @@ def getTFminiData():
                 distance = recv[2] + recv[3] * 256
                 strength = recv[4] + recv[5] * 256
                 #print('(', distance, ';', strength, ')')
-                # format and store dist and strength pin lidar.csv
-                list =["{0};{1}".format(distance, strength)]
+               
+                # format and store dist and strength in lidar.csv
+                now = datetime.now()
+                ct = now.strftime("%H:%M:%S") 
+                
+                list =[ct, "{0};{1}".format(distance, strength)]
                 with open('lidar.csv', 'a') as f_object:
                     # Pass this file object to csv.writer()
                     # and get a writer object
@@ -146,13 +152,18 @@ p3.start(0) # Initialization
 # -----------------------------------------------------------------------------------------------------------------------------------------------
 
 while True:
+        
 # ------ Run Therm Cam -------------------------------------------------------------------------------------------------------------------------------
         try:
             mlx.getFrame(frame) # read MLX temperatures into frame var
         except ValueError:
             continue # if error, just read again   
-            print (hello) 
-        list =["{0}".format(frame)]
+            #print (hello) 
+            
+        now = datetime.now()
+        ct = now.strftime("%H:%M:%S")    
+        
+        list =[ct, "{0}".format(frame)]
         with open('ir.csv', 'a') as f_object:
                     # Pass this file object to csv.writer()
                     # and get a writer object
@@ -205,7 +216,11 @@ while True:
         print("X angle, Y angle, Magnetic Field, and Temperature from IMU")
         #print(AccXangle, AccYangle, mag, temp) 
         
-        list =["{0:0.3f}".format(AccXangle),
+        now = datetime.now()
+        ct = now.strftime("%H:%M:%S") 
+        
+        list =[ct,
+        "{0:0.3f}".format(AccXangle),
         "{0:0.3f}".format(AccYangle),
         "{0:0.3f};{1:0.3f};{2:0.3f}".format(mag_x, mag_y, mag_z),
         "{0:0.3f}".format(temp)]
@@ -235,7 +250,10 @@ while True:
         print("proximity sensor range")
         print("Range: {0}mm".format(vl53.range))
         
-        list =["{0}".format(vl53.range)]
+        now = datetime.now()
+        ct = now.strftime("%H:%M:%S") 
+        
+        list =[ct, "{0}".format(vl53.range)]
         with open('proximity.csv', 'a') as f_object:
                     # Pass this file object to csv.writer()
                     # and get a writer object
