@@ -1,0 +1,5 @@
+option batch abort
+option confirm off
+open sftp://pi:raspberry@192.168.0.18/ -hostkey="ssh-ed25519 255 M6HVwwZtBSbREkET7MH90ePSUeZyD0KPWJLRWwLC954="
+synchronize local data /home/pi/data
+exit
